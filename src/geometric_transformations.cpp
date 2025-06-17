@@ -1,0 +1,60 @@
+//================================================================================================================
+// Aqui estão implementadas as funções de transformação geométrica (TRANSLAÇÃO, ROTAÇÃO, ESCALA.)
+//================================================================================================================
+
+#include <GL/glut.h>
+#include "geometric_transformations.h"
+
+
+void geometricTransformation::Translate(float tx, float ty, float tz) {
+    GLfloat matriz[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        tx, ty, tz, 1.0f
+    };
+    glMultMatrixf(matriz);
+}
+
+void geometricTransformation::Scale(float sx, float sy, float sz) {
+    GLfloat matriz[16] = {
+        sx,   0.0f, 0.0f, 0.0f,
+        0.0f, sy,   0.0f, 0.0f,
+        0.0f, 0.0f, sz,   0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    glMultMatrixf(matriz);
+}
+
+// Implementa rotação em torno de um dos eixos principais (X, Y ou Z)
+void geometricTransformation::Rotate(float angulo, float x, float y, float z) {
+    float rad = angulo * M_PI / 180.0f;
+    float c = cos(rad);
+    float s = sin(rad);
+
+    GLfloat matriz[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+
+    if (x == 1.0f && y == 0.0f && z == 0.0f) { // Rotação em X
+        matriz[5] = c;
+        matriz[6] = s;
+        matriz[9] = -s;
+        matriz[10] = c;
+    } else if (x == 0.0f && y == 1.0f && z == 0.0f) { // Rotação em Y
+        matriz[0] = c;
+        matriz[2] = -s;
+        matriz[8] = s;
+        matriz[10] = c;
+    } else if (x == 0.0f && y == 0.0f && z == 1.0f) { // Rotação em Z
+        matriz[0] = c;
+        matriz[1] = s;
+        matriz[4] = -s;
+        matriz[5] = c;
+    }
+
+    glMultMatrixf(matriz);
+}

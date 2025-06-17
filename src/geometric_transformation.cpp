@@ -1,1 +1,0 @@
-//Aplicar as transformações geometricas (Translação,Rotação e Esscala aqui)
