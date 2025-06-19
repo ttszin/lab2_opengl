@@ -58,3 +58,29 @@ void geometricTransformation::Rotate(float angulo, float x, float y, float z) {
 
     glMultMatrixf(matriz);
 }
+
+void geometricTransformation::Perspective(float fovy, float aspect, float zNear, float zFar) {
+    // Converte o campo de visão (fovy) de graus para radianos
+    float f = 1.0f / tan((fovy * M_PI / 180.0f) / 2.0f);
+
+    // Constrói a matriz de projeção perspectiva (column-major)
+    GLfloat matriz[16] = {
+        f / aspect, 0.0f, 0.0f, 0.0f,
+        0.0f, f,    0.0f, 0.0f,
+        0.0f, 0.0f, (zFar + zNear) / (zNear - zFar), -1.0f,
+        0.0f, 0.0f, (2.0f * zFar * zNear) / (zNear - zFar), 0.0f
+    };
+
+    glMultMatrixf(matriz);
+}
+
+void geometricTransformation::Orthographic(float left, float right, float bottom, float top, float zNear, float zFar) {
+    GLfloat matriz[16] = {
+        2.0f / (right - left), 0.0f, 0.0f, 0.0f,
+        0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
+        0.0f, 0.0f, -2.0f / (zFar - zNear), 0.0f, // <-- CORRIGIDO
+        -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(zFar + zNear) / (zFar - zNear), 1.0f // <-- CORRIGIDO
+    };
+
+    glMultMatrixf(matriz);
+}

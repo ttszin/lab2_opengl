@@ -22,11 +22,19 @@ class geometricTransformation {
         float y;
         float z;
         float angulo;
+        float  fovy;
+        float aspect;
+        float zNear;
+        float zFar;
     public: // <-- TORNA OS MÉTODOS PÚBLICOS E ACESSÍVEIS
         // Métodos estáticos não precisam de um objeto para serem chamados
         static void Translate(float tx, float ty, float tz);
         static void Scale(float sx, float sy, float sz);
         static void Rotate(float angulo, float x, float y, float z);
+
+        // --- NOVOS MÉTODOS DE PROJEÇÃO ---
+        static void Perspective(float fovy, float aspect, float zNear, float zFar);
+        static void Orthographic(float left, float right, float bottom, float top, float zNear, float zFar);
 };
 
 #endif // GEOMETRIC_TRANSFORMATION_H
