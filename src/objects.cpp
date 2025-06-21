@@ -3,10 +3,317 @@
 #include "objects.h" // Incluindo o arquivo de modelagem dos objetos
 #include "geometric_transformations.h"
 #include <initializer_list>
+#include "rasterization.h"
+#include <vector> // Precisaremos de vetores para armazenar os pontos
+
 //======================================================================
 // MODELAGEM DOS OBJETOS DO LABORATÓRIO
 //======================================================================
 
+// Versão da mesa onde apenas o tampo é desenhado em wireframe
+void Objects::desenhaMesaLaboratorioWireframeTampo(float largura, float profundidade) {
+    // Definindo as dimensões
+    float alturaMesa = 0.75f;
+    float espessuraPainel = 0.05f;
+
+    // --- Desenha a Base Sólida (Prateleira e Painéis) ---
+    glPushMatrix();
+
+    // Prateleira Inferior (sólida)
+    glColor3f(0.8f, 0.1f, 0.1f);
+    glPushMatrix();
+    geometricTransformation::Translate(0.0f, 0.4f, 0.0f);
+    geometricTransformation::Scale(largura - (2 * espessuraPainel), 0.05f, profundidade * 0.9f);
+    desenhaCubo();
+    glPopMatrix();
+
+    // Painéis de Suporte (sólidos)
+    glColor3f(0.9f, 0.8f, 0.6f);
+    // ... (código dos 3 painéis de suporte, exatamente como na função da mesa sólida) ...
+
+    glPopMatrix();
+
+
+    // --- Desenha o Tampo em Wireframe ---
+    glPushMatrix();
+    // Move o tampo para a altura correta
+    geometricTransformation::Translate(0.0f, alturaMesa, 0.0f);
+    // CHAMA A NOVA FUNÇÃO DE DESENHO EM WIREFRAME
+    desenhaTampoDaMesaWireframeBresenham(largura, profundidade, 0.05f);
+    glPopMatrix();
+}
+
+void Objects::desenhaTampoDaMesa(float largura, float profundidade, float espessura) {
+    float raio_canto = 0.2f;
+    int num_segmentos_canto = 10;
+    float l = largura / 2.0f;
+    float p = profundidade / 2.0f;
+    float e = espessura / 2.0f;
+
+    // --- Face de Cima (Lógica Corrigida) ---
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    // 1. Parte retangular principal (forma de "T" que cobre a maior parte da área)
+    glBegin(GL_QUADS);
+        glVertex3f(-l, e, -p);
+        glVertex3f(l, e, -p);
+        glVertex3f(l, e, p - raio_canto);
+        glVertex3f(-l, e, p - raio_canto);
+    glEnd();
+    glBegin(GL_QUADS);
+        glVertex3f(-(l - raio_canto), e, p - raio_canto);
+        glVertex3f((l - raio_canto), e, p - raio_canto);
+        glVertex3f((l - raio_canto), e, p);
+        glVertex3f(-(l - raio_canto), e, p);
+    glEnd();
+
+    // 2. Canto superior direito (preenchendo o vão com um leque de triângulos)
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(l - raio_canto, e, p - raio_canto); // Ponto central do leque
+        glVertex3f(l, e, p - raio_canto); // Ponto inicial da curva
+        for (int i = 1; i <= num_segmentos_canto; ++i) {
+            float angulo = (float)i / (float)num_segmentos_canto * 90.0f;
+            float rad = angulo * M_PI / 180.0f;
+            glVertex3f((l - raio_canto) + cos(rad) * raio_canto, e, (p - raio_canto) + sin(rad) * raio_canto);
+        }
+    glEnd();
+
+    // 3. Canto superior esquerdo
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(-(l - raio_canto), e, p - raio_canto); // Ponto central do leque
+        glVertex3f(-(l - raio_canto), e, p); // Ponto inicial da curva
+        for (int i = 1; i <= num_segmentos_canto; ++i) {
+            float angulo = 90.0f + (float)i / (float)num_segmentos_canto * 90.0f;
+            float rad = angulo * M_PI / 180.0f;
+            glVertex3f(-(l - raio_canto) + cos(rad) * raio_canto, e, (p - raio_canto) + sin(rad) * raio_canto);
+        }
+        glVertex3f(-l, e, p - raio_canto); // Ponto final da curva
+    glEnd();
+
+
+    // --- Face de Baixo (Lógica Corrigida) ---
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    // 1. Parte retangular principal
+    glBegin(GL_QUADS);
+        glVertex3f(-l, -e, p - raio_canto);
+        glVertex3f(l, -e, p - raio_canto);
+        glVertex3f(l, -e, -p);
+        glVertex3f(-l, -e, -p);
+    glEnd();
+    glBegin(GL_QUADS);
+        glVertex3f(-(l - raio_canto), -e, p);
+        glVertex3f((l - raio_canto), -e, p);
+        glVertex3f((l - raio_canto), -e, p - raio_canto);
+        glVertex3f(-(l - raio_canto), -e, p - raio_canto);
+    glEnd();
+    // 2. Canto inferior direito
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(l - raio_canto, -e, p - raio_canto);
+        for (int i = num_segmentos_canto; i >= 0; --i) { // Ordem invertida
+            float angulo = (float)i / (float)num_segmentos_canto * 90.0f;
+            float rad = angulo * M_PI / 180.0f;
+            glVertex3f((l - raio_canto) + cos(rad) * raio_canto, -e, (p - raio_canto) + sin(rad) * raio_canto);
+        }
+    glEnd();
+    // 3. Canto inferior esquerdo
+     glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(-(l - raio_canto), -e, p - raio_canto);
+        for (int i = num_segmentos_canto; i >= 0; --i) { // Ordem invertida
+            float angulo = 90.0f + (float)i / (float)num_segmentos_canto * 90.0f;
+            float rad = angulo * M_PI / 180.0f;
+            glVertex3f(-(l - raio_canto) + cos(rad) * raio_canto, -e, (p - raio_canto) + sin(rad) * raio_canto);
+        }
+    glEnd();
+
+
+    // --- Faces Laterais, Traseira e Frontal Curva ---
+    // O código para estas faces estava correto e pode permanecer o mesmo.
+    // Face de Trás
+    glBegin(GL_QUADS);
+        glNormal3f(0.0f, 0.0f, -1.0f);
+        glVertex3f(l, -e, -p); glVertex3f(l, e, -p); glVertex3f(-l, e, -p); glVertex3f(-l, -e, -p);
+    glEnd();
+
+    // Face da Frente Curva
+    glBegin(GL_QUAD_STRIP); // Canto direito
+    for (int i = 0; i <= num_segmentos_canto; ++i) {
+        float angulo = (float)i / (float)num_segmentos_canto * 90.0f; float rad = angulo * M_PI / 180.0f;
+        float x_pos = (l - raio_canto) + cos(rad) * raio_canto; float z_pos = (p - raio_canto) + sin(rad) * raio_canto;
+        glNormal3f(cos(rad), 0.0f, sin(rad));
+        glVertex3f(x_pos, e, z_pos); glVertex3f(x_pos, -e, z_pos);
+    }
+    glEnd();
+    glBegin(GL_QUAD_STRIP); // Parte reta
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(l - raio_canto, e, p); glVertex3f(l - raio_canto, -e, p);
+        glVertex3f(-(l - raio_canto), e, p); glVertex3f(-(l - raio_canto), -e, p);
+    glEnd();
+    glBegin(GL_QUAD_STRIP); // Canto esquerdo
+    for (int i = 0; i <= num_segmentos_canto; ++i) {
+        float angulo = 90.0f + (float)i / (float)num_segmentos_canto * 90.0f; float rad = angulo * M_PI / 180.0f;
+        float x_pos = -(l - raio_canto) + cos(rad) * raio_canto; float z_pos = (p - raio_canto) + sin(rad) * raio_canto;
+        glNormal3f(cos(rad), 0.0f, sin(rad));
+        glVertex3f(x_pos, e, z_pos); glVertex3f(x_pos, -e, z_pos);
+    }
+    glEnd();
+}
+
+void Objects::desenhaLixeira() {
+    // Define os 8 vértices: 4 para a base (menor) e 4 para o topo (maior)
+    float base = 0.2f;  // metade da largura da base
+    float topo = 0.3f;  // metade da largura do topo
+    float altura = 0.5f;
+
+    GLfloat vertices[8][3] = {
+        // Base (y=0)
+        {-base, 0, -base}, {base, 0, -base}, {base, 0, base}, {-base, 0, base},
+        // Topo (y=altura)
+        {-topo, altura, -topo}, {topo, altura, -topo}, {topo, altura, topo}, {-topo, altura, topo}
+    };
+    
+    // Define as faces
+    int faces[6][4] = {
+        {0, 1, 2, 3}, // Base
+        {4, 5, 6, 7}, // Topo (abertura, não desenhamos)
+        {0, 1, 5, 4}, // Lado 1
+        {1, 2, 6, 5}, // Lado 2
+        {2, 3, 7, 6}, // Lado 3
+        {3, 0, 4, 7}  // Lado 4
+    };
+
+    // Desenha a base
+    glBegin(GL_QUADS);
+        glNormal3f(0, -1, 0);
+        for(int i = 0; i < 4; ++i) glVertex3fv(vertices[faces[0][i]]);
+    glEnd();
+
+    // Desenha as faces laterais
+    // (O cálculo da normal aqui é simplificado, mas funcional para este caso)
+    glBegin(GL_QUADS);
+        glNormal3f(0, 0, -1);
+        for(int i = 0; i < 4; ++i) glVertex3fv(vertices[faces[2][i]]);
+        glNormal3f(1, 0, 0);
+        for(int i = 0; i < 4; ++i) glVertex3fv(vertices[faces[3][i]]);
+        glNormal3f(0, 0, 1);
+        for(int i = 0; i < 4; ++i) glVertex3fv(vertices[faces[4][i]]);
+        glNormal3f(-1, 0, 0);
+        for(int i = 0; i < 4; ++i) glVertex3fv(vertices[faces[5][i]]);
+    glEnd();
+}
+
+void Objects::desenhaLixeiraWireframeBresenham() {
+    // --- 1. GERAÇÃO DOS VÉRTICES ---
+    float base = 0.2f;
+    float topo = 0.3f;
+    float altura = 0.5f;
+
+    Point3D vertices[8] = {
+        {-base, 0, -base}, {base, 0, -base}, {base, 0, base}, {-base, 0, base},
+        {-topo, altura, -topo}, {topo, altura, -topo}, {topo, altura, topo}, {-topo, altura, topo}
+    };
+
+    // Define as 12 arestas conectando os 8 vértices
+    int arestas[12][2] = {
+        {0,1}, {1,2}, {2,3}, {3,0}, // Arestas da base
+        {4,5}, {5,6}, {6,7}, {7,4}, // Arestas do topo
+        {0,4}, {1,5}, {2,6}, {3,7}  // Arestas laterais (as diagonais!)
+    };
+
+    // --- 2. PROJEÇÃO E RASTERIZAÇÃO ---
+    glColor3f(0.2f, 0.8f, 1.0f); // Cor azul claro
+    glPointSize(2.0f);
+
+    GLdouble modelview[16], projection[16];
+    GLint viewport[4];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    auto projetar_e_rasterizar = [&](const Point3D& p1, const Point3D& p2) {
+        GLdouble p1_2d[2], p2_2d[2], temp_z;
+        gluProject(p1.x, p1.y, p1.z, modelview, projection, viewport, &p1_2d[0], &p1_2d[1], &temp_z);
+        gluProject(p2.x, p2.y, p2.z, modelview, projection, viewport, &p2_2d[0], &p2_2d[1], &temp_z);
+        bresenham((int)p1_2d[0], (int)p1_2d[1], (int)p2_2d[0], (int)p2_2d[1], drawScreenPixel);
+    };
+
+    for (int i = 0; i < 12; ++i) {
+        projetar_e_rasterizar(vertices[arestas[i][0]], vertices[arestas[i][1]]);
+    }
+}
+
+void Objects::desenhaTampoDaMesaWireframeBresenham(float largura, float profundidade, float espessura) {
+    // --- 1. GERAÇÃO E ARMAZENAMENTO DOS VÉRTICES DO CONTORNO ---
+
+    float raio_canto = 0.2f;
+    int num_segmentos_canto = 10;
+    float l = largura / 2.0f;
+    float p = profundidade / 2.0f;
+    float e = espessura / 2.0f;
+
+    std::vector<Point3D> contorno_superior;
+    std::vector<Point3D> contorno_inferior;
+
+    // A. Vértices da parte de trás e lateral direita
+    contorno_superior.push_back({-l, e, -p});
+    contorno_superior.push_back({l, e, -p});
+    contorno_superior.push_back({l, e, p - raio_canto});
+
+    // B. Vértices do canto frontal direito (curva)
+    for (int i = 1; i <= num_segmentos_canto; ++i) {
+        float angulo = (float)i / num_segmentos_canto * 90.0f;
+        float rad = angulo * M_PI / 180.0f;
+        contorno_superior.push_back({-(l - raio_canto) + cosf(rad) * raio_canto, e, (p - raio_canto) + sinf(rad) * raio_canto});
+    }
+
+    // C. Vértices do canto frontal esquerdo (curva)
+    for (int i = 1; i <= num_segmentos_canto; ++i) {
+        float angulo = 90.0f + (float)i / num_segmentos_canto * 90.0f;
+        float rad = angulo * M_PI / 180.0f;
+        contorno_superior.push_back({-(l - raio_canto) + cosf(rad) * raio_canto, e, (p - raio_canto) + sinf(rad) * raio_canto});
+    }
+
+    // D. Vértice da lateral esquerda
+    contorno_superior.push_back({-l, e, p - raio_canto});
+
+    // Cria o contorno inferior espelhando o superior no eixo Y
+    for (const auto& ponto : contorno_superior) {
+        contorno_inferior.push_back({ponto.x, -e, ponto.z});
+    }
+
+    // --- 2. PROJEÇÃO E RASTERIZAÇÃO DAS ARESTAS ---
+    
+    glColor3f(1.0f, 1.0f, 0.0f); // Cor amarela para o wireframe
+    glPointSize(1.0f);
+
+    GLdouble modelview[16], projection[16];
+    GLint viewport[4];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    auto projetar_e_rasterizar = [&](const Point3D& p1, const Point3D& p2) {
+        GLdouble p1_2d[2], p2_2d[2];
+        GLdouble temp_z;
+        gluProject(p1.x, p1.y, p1.z, modelview, projection, viewport, &p1_2d[0], &p1_2d[1], &temp_z);
+        gluProject(p2.x, p2.y, p2.z, modelview, projection, viewport, &p2_2d[0], &p2_2d[1], &temp_z);
+        bresenham((int)p1_2d[0], (int)p1_2d[1], (int)p2_2d[0], (int)p2_2d[1], drawScreenPixel);
+    };
+
+    // A. Desenha as arestas do contorno superior e inferior
+    for (size_t i = 0; i < contorno_superior.size(); ++i) {
+        Point3D p1_sup = contorno_superior[i];
+        Point3D p2_sup = contorno_superior[(i + 1) % contorno_superior.size()]; // O % faz a volta para o início
+        projetar_e_rasterizar(p1_sup, p2_sup);
+
+        Point3D p1_inf = contorno_inferior[i];
+        Point3D p2_inf = contorno_inferior[(i + 1) % contorno_inferior.size()];
+        projetar_e_rasterizar(p1_inf, p2_inf);
+    }
+    
+    // B. Desenha as arestas verticais que conectam os dois contornos
+    for (size_t i = 0; i < contorno_superior.size(); ++i) {
+        projetar_e_rasterizar(contorno_superior[i], contorno_inferior[i]);
+    }
+}
 
 void Objects::desenhaCubo() {
     // Face da frente
@@ -114,6 +421,13 @@ void Objects::desenhaJanela(float anguloAbertura) {
 
 void Objects::desenhaMonitor() {
     glPushMatrix();
+
+    // --- Deixa o material do monitor brilhante ---
+    GLfloat especularidade_plastico[] = {0.8f, 0.8f, 0.8f, 1.0f}; // Um brilho branco
+    GLint expoente_especular = 50; // Quão concentrado é o brilho (valores maiores = mais nítido)
+    glMaterialfv(GL_FRONT, GL_SPECULAR, especularidade_plastico);
+    glMateriali(GL_FRONT, GL_SHININESS, expoente_especular);
+
     // Base do monitor
     glColor3f(0.2f, 0.2f, 0.2f); // Cinza escuro
     glPushMatrix();
@@ -145,6 +459,10 @@ void Objects::desenhaMonitor() {
     desenhaCubo();
     glPopMatrix();
     glEnable(GL_LIGHTING); // Liga a iluminação de volta
+
+    // --- Devolve o material para um estado sem brilho para os próximos objetos ---
+    GLfloat sem_brilho[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    glMaterialfv(GL_FRONT, GL_SPECULAR, sem_brilho);
 
     glPopMatrix();
 }
@@ -199,52 +517,57 @@ void Objects::desenhaCadeira() {
 }
 
 void Objects::desenhaMesaLaboratorio(float largura, float profundidade) {
-    float altura = 0.7f;
-    float espessura_tampo = 0.05f;
-    float espessura_pe = 0.1f;
+    // Definindo as dimensões com base na foto
+    float alturaMesa = 0.75f;
+    float alturaPrateleira = 0.4f;
+    float espessuraTampo = 0.05f;
+    float espessuraPainel = 0.05f;
 
     glPushMatrix();
-    glColor3f(0.6f, 0.4f, 0.2f); // Cor de madeira
 
-    // Tampo
+    // --- Tampo Principal (vermelho) com cantos arredondados ---
+    glColor3f(0.8f, 0.1f, 0.1f);
     glPushMatrix();
-    geometricTransformation::Translate(0.0f, altura - (espessura_tampo / 2.0f), 0.0f);
-    geometricTransformation::Scale(largura, espessura_tampo, profundidade);
+    geometricTransformation::Translate(0.0f, alturaMesa, 0.0f);
+    desenhaTampoDaMesa(largura, profundidade, espessuraTampo); // Chama a função correta do tampo
+    glPopMatrix();
+
+    // --- Prateleira Inferior (vermelha) ---
+    // Esta pode ser um cubo simples, pois é menos visível.
+    glPushMatrix();
+    geometricTransformation::Translate(0.0f, alturaPrateleira, 0.0f);
+    // É um pouco mais estreita para se encaixar entre os painéis de suporte
+    geometricTransformation::Scale(largura - (2 * espessuraPainel), espessuraTampo, profundidade * 0.9f);
     desenhaCubo();
     glPopMatrix();
 
-    // Pés
-    float pos_x = largura / 2.0f - espessura_pe / 2.0f;
-    float pos_z = profundidade / 2.0f - espessura_pe / 2.0f;
-    float alt_pe = altura - espessura_tampo;
+    // --- Painéis de Suporte (cor de madeira) ---
+    glColor3f(0.9f, 0.8f, 0.6f); // Cor clara de madeira
 
-    // Pé 1 (frente, direita)
+    // Painel da Esquerda
     glPushMatrix();
-    geometricTransformation::Translate(pos_x, alt_pe / 2.0f, pos_z);
-    geometricTransformation::Scale(espessura_pe, alt_pe, espessura_pe);
+    float posX_painel = -largura / 2.0f + espessuraPainel / 2.0f;
+    geometricTransformation::Translate(posX_painel, (alturaMesa - espessuraTampo) / 2.0f, 0.0f);
+    geometricTransformation::Scale(espessuraPainel, alturaMesa - espessuraTampo, profundidade);
     desenhaCubo();
     glPopMatrix();
 
-    // Pé 2 (frente, esquerda)
+    // Painel da Direita
     glPushMatrix();
-    geometricTransformation::Translate(-pos_x, alt_pe / 2.0f, pos_z);
-    geometricTransformation::Scale(espessura_pe, alt_pe, espessura_pe);
+    posX_painel = largura / 2.0f - espessuraPainel / 2.0f;
+    geometricTransformation::Translate(posX_painel, (alturaMesa - espessuraTampo) / 2.0f, 0.0f);
+    geometricTransformation::Scale(espessuraPainel, alturaMesa - espessuraTampo, profundidade);
     desenhaCubo();
     glPopMatrix();
 
-    // Pé 3 (trás, direita)
-    glPushMatrix();
-    geometricTransformation::Translate(pos_x, alt_pe / 2.0f, -pos_z);
-    geometricTransformation::Scale(espessura_pe, alt_pe, espessura_pe);
-    desenhaCubo();
-    glPopMatrix();
-
-    // Pé 4 (trás, esquerda)
-    glPushMatrix();
-    geometricTransformation::Translate(-pos_x, alt_pe / 2.0f, -pos_z);
-    geometricTransformation::Scale(espessura_pe, alt_pe, espessura_pe);
-    desenhaCubo();
-    glPopMatrix();
+    // Painel Central (para mesas longas)
+    if (largura > 2.0f) {
+        glPushMatrix();
+        geometricTransformation::Translate(0.0f, (alturaMesa - espessuraTampo) / 2.0f, 0.0f);
+        geometricTransformation::Scale(espessuraPainel, alturaMesa - espessuraTampo, profundidade);
+        desenhaCubo();
+        glPopMatrix();
+    }
 
     glPopMatrix();
 }
@@ -304,13 +627,14 @@ void Objects::desenhaPostoDeTrabalho() {
 
     // Gabinete no chão, ao lado da mesa
     glPushMatrix();
-    geometricTransformation::Translate(0.4f, 0.25f, 0.0f);
+    geometricTransformation::Translate(0.4f, 1.0f, 0.0f);
     desenhaGabinetePC();
     glPopMatrix();
 
     // Cadeira em frente à mesa
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.0f, 0.6f);
+    geometricTransformation::Rotate(-180.0f, 0.0f, 1.0f, 0.0f); // Gira a cadeira para frente
     desenhaCadeira();
     glPopMatrix();
 

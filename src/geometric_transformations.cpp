@@ -78,8 +78,8 @@ void geometricTransformation::Orthographic(float left, float right, float bottom
     GLfloat matriz[16] = {
         2.0f / (right - left), 0.0f, 0.0f, 0.0f,
         0.0f, 2.0f / (top - bottom), 0.0f, 0.0f,
-        0.0f, 0.0f, -2.0f / (zFar - zNear), 0.0f, // <-- CORRIGIDO
-        -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(zFar + zNear) / (zFar - zNear), 1.0f // <-- CORRIGIDO
+        0.0f, 0.0f, -2.0f / (zFar - zNear), 0.0f,
+        -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(zFar + zNear) / (zFar - zNear), 1.0f 
     };
 
     glMultMatrixf(matriz);
