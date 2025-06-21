@@ -6,7 +6,7 @@ Este é um projeto acadêmico para a disciplina de Computação Gráfica, desenv
 
 * Matheus Teixeira de Souza
 * Vinicius Furtado
-
+* António Lopes
 ## ⚙️ Tecnologias Utilizadas
 
 * **Linguagem:** C++
