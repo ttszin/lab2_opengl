@@ -128,40 +128,66 @@ void display() {
     // --- MONTAGEM DA CENA ---
     obj.desenhaSala(12.0f, 4.0f, 16.0f);
 
-    // Coloca o quadro negro na parede de trás
+    // --- LIXEIRA: Desenha a lixeira em wireframe usando Bresenham ---
     glPushMatrix();
-    gt.Translate(0.0f, 2.0f, -7.9f); // -8 é a parede, -7.9 para ficar um pouco na frente
+    // Coloca a lixeira em um canto da sala
+    geometricTransformation::Translate(-5.0f, 0.0f, 6.0f);
+    obj.desenhaLixeiraWireframeBresenham(); // Chama a nossa nova função
+    glPopMatrix();
+
+    // Desenha o quadro negro primeiro
+    glPushMatrix();
+    geometricTransformation::Translate(0.0f, 2.0f, -7.9f);
     obj.desenhaQuadroNegro();
     glPopMatrix();
 
-    // Fileira de mesas da esquerda
-    glPushMatrix();
-    gt.Translate(-3.0f, 0.0f, 0.0f);
-    obj.desenhaMesaLaboratorio(3.0f, 1.0f);
-    glPopMatrix();
+    // Define as posições X para cada fileira de mesas
+    float posicoes_fileiras[] = {0.0f, 3.5f}; // Afastei um pouco uma da outra
 
-    // Fileira de mesas da direita
-    glPushMatrix();
-    gt.Translate(3.0f, 0.0f, 0.0f);
-    obj.desenhaMesaLaboratorio(3.0f, 1.0f);
-    glPopMatrix();
-
-    // Coloca 2 postos de trabalho em cada fileira
-    float posicoes_mesas[] = {-3.0f, 3.0f};
-    for(float pos_x : posicoes_mesas) {
-        // Posto 1
+    // Loop principal para cada FILEIRA de mesas
+    for(float pos_x_fileira : posicoes_fileiras) {
+        
+        // Agrupa tudo que pertence a esta fileira
         glPushMatrix();
-        gt.Translate(pos_x, 0.0f, 0.0f); // Posição x da fileira, z do posto
+
+        // 1. Move para a posição da fileira atual
+        geometricTransformation::Translate(pos_x_fileira, 0.0f, -1.5f);
+
+    
+        // --- MESA ESPECIAL: Tampo Rasterizado ---
+        // Desenha a mesa com o tampo em wireframe
+        obj.desenhaMesaLaboratorio(4.0f, 1.2f);
+        // Desenha os postos de trabalho normalmente sobre ela
+        // (o tampo não existe de forma sólida, então os objetos vão flutuar, o que é bom para a demonstração)
+        glPushMatrix();
+        geometricTransformation::Translate(-1.0f, 0.0f, 0.0f);
+        obj.desenhaPostoDeTrabalho();
+        glPopMatrix();
+    
+        // 2. Desenha UMA bancada longa para esta fileira
+        // Aumentei a largura para 4.0 para caberem 2 postos de trabalho confortavelmente
+        obj.desenhaMesaLaboratorio(4.0f, 1.2f);
+
+        // 3. Agora, desenha os postos de trabalho NESTA BANCADA.
+        // As posições agora são relativas à bancada.
+
+        // Posto de Trabalho 1 (na parte da frente da bancada)
+        glPushMatrix();
+        // Move para a posição do primeiro posto (-1.0 no eixo X local da mesa)
+        geometricTransformation::Translate(-1.0f, 0.0f, 0.0f);
         obj.desenhaPostoDeTrabalho();
         glPopMatrix();
 
-        // Posto 2
+        // Posto de Trabalho 2 (na parte de trás da bancada)
         glPushMatrix();
-        gt.Translate(pos_x, 0.0f, -3.0f);
+        // Move para a posição do segundo posto (+1.0 no eixo X local da mesa)
+        geometricTransformation::Translate(1.0f, 0.0f, 0.0f);
         obj.desenhaPostoDeTrabalho();
+        glPopMatrix();
+       
+        // Fim do grupo desta fileira
         glPopMatrix();
     }
-
     // --- DESENHA AS JANELAS NA PAREDE ESQUERDA ---
     // A parede esquerda está em X = -6.0f (metade da largura da sala que é 12.0f)
     float parede_x = -5.98f; // Um pouco para dentro para não "brigar" com a parede
