@@ -39,23 +39,64 @@ Para rodar este programa, é essencial ter o compilador **MinGW** e as bibliotec
 ### Compilação
 
 Com o ambiente configurado, abra o terminal (Prompt de Comando ou PowerShell) na pasta raiz do projeto e execute o seguinte comando para compilar todos os arquivos de código-fonte:
+-----
 
-###Linux:
-   Requisitos:
-      ```bash
-      sudo apt-get install freeglut3 freeglut3-dev
-      ```
-      ```bash
-      g++ main.cpp geometric_transformations.cpp objects.cpp rasterization.cpp -o lab_app -lGL -lGLU -lglut
-      ```
-###Windows:
+## 🚀 Compilação e Execução
+
+Siga as instruções abaixo para o seu sistema operacional.
+
+### Linux (Debian/Ubuntu e derivados)
+
+**1. Instalar Dependências**
+
+Abra o terminal e instale o compilador C++ e as bibliotecas FreeGLUT com o seguinte comando:
+
 ```bash
-g++ main.cpp geometric_transformation.cpp objects.cpp -o lab_app -lopengl32 -lglu32 -lglut32 -lm
+sudo apt-get update && sudo apt-get install build-essential freeglut3-dev
 ```
+
+**2. Compilar o Projeto**
+
+Navegue até a pasta raiz do projeto no terminal e execute o comando de compilação:
+
+```bash
+g++ main.cpp geometric_transformations.cpp objects.cpp rasterization.cpp -o lab_app -lGL -lGLU -lglut -lm
+```
+
+**3. Executar**
+
+Execute a aplicação com o comando:
+
+```bash
+./lab_app
+```
+
+### Windows (Utilizando MinGW/g++)
+
+**1. Configurar o Ambiente**
+
+Antes de compilar, você precisa ter o MinGW instalado e os arquivos do GLUT configurados corretamente:
+
+  * **MinGW:** Tenha o compilador g++ para Windows instalado e configurado no PATH do sistema.
+  * **GLUT:**
+    1.  Baixe os binários do GLUT (ex: [glut-3.7.6-bin.zip](https://www.google.com/search?q=https://www.transmission.mspro.com/download/glut-3.7.6-bin.zip)).
+    2.  Copie `glut.h` para a pasta `MinGW\include\GL\`.
+    3.  Copie `glut32.lib` para a pasta `MinGW\lib\`.
+    4.  Copie `glut32.dll` para a **pasta do projeto** (mesmo local onde o `.exe` será gerado).
+
+**2. Compilar o Projeto**
+
+Abra um terminal (CMD ou PowerShell) na pasta raiz do projeto e execute o comando de compilação:
+
+```bash
+g++ main.cpp geometric_transformations.cpp objects.cpp rasterization.cpp -o lab_app.exe -lopengl32 -lglu32 -lglut32 -lm
+```
+
+
 
 Isso irá gerar um arquivo executável chamado `lab_app.exe`.
 
-### Execução
+**3. Execução**
 
 Para executar a aplicação, basta rodar o arquivo gerado no passo anterior:
 
