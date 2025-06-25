@@ -10,39 +10,6 @@
 // MODELAGEM DOS OBJETOS DO LABORATÓRIO
 //======================================================================
 
-// Versão da mesa onde apenas o tampo é desenhado em wireframe
-void Objects::desenhaMesaLaboratorioWireframeTampo(float largura, float profundidade) {
-    // Definindo as dimensões
-    float alturaMesa = 0.75f;
-    float espessuraPainel = 0.05f;
-
-    // --- Desenha a Base Sólida (Prateleira e Painéis) ---
-    glPushMatrix();
-
-    // Prateleira Inferior (sólida)
-    glColor3f(0.8f, 0.1f, 0.1f);
-    glPushMatrix();
-    geometricTransformation::Translate(0.0f, 0.4f, 0.0f);
-    geometricTransformation::Scale(largura - (2 * espessuraPainel), 0.05f, profundidade * 0.9f);
-    desenhaCubo();
-    glPopMatrix();
-
-    // Painéis de Suporte (sólidos)
-    glColor3f(0.9f, 0.8f, 0.6f);
-    // ... (código dos 3 painéis de suporte, exatamente como na função da mesa sólida) ...
-
-    glPopMatrix();
-
-
-    // --- Desenha o Tampo em Wireframe ---
-    glPushMatrix();
-    // Move o tampo para a altura correta
-    geometricTransformation::Translate(0.0f, alturaMesa, 0.0f);
-    // CHAMA A NOVA FUNÇÃO DE DESENHO EM WIREFRAME
-    desenhaTampoDaMesaWireframeBresenham(largura, profundidade, 0.05f);
-    glPopMatrix();
-}
-
 void Objects::desenhaTampoDaMesa(float largura, float profundidade, float espessura) {
     float raio_canto = 0.2f;
     int num_segmentos_canto = 10;
@@ -201,119 +168,54 @@ void Objects::desenhaLixeira() {
 }
 
 void Objects::desenhaLixeiraWireframeBresenham() {
-    // --- 1. GERAÇÃO DOS VÉRTICES ---
+    // 1. Vértices da lixeira
     float base = 0.2f;
     float topo = 0.3f;
     float altura = 0.5f;
 
+    struct Point3D { float x, y, z; };
     Point3D vertices[8] = {
         {-base, 0, -base}, {base, 0, -base}, {base, 0, base}, {-base, 0, base},
         {-topo, altura, -topo}, {topo, altura, -topo}, {topo, altura, topo}, {-topo, altura, topo}
     };
 
-    // Define as 12 arestas conectando os 8 vértices
     int arestas[12][2] = {
-        {0,1}, {1,2}, {2,3}, {3,0}, // Arestas da base
-        {4,5}, {5,6}, {6,7}, {7,4}, // Arestas do topo
-        {0,4}, {1,5}, {2,6}, {3,7}  // Arestas laterais (as diagonais!)
+        {0,1}, {1,2}, {2,3}, {3,0}, // base
+        {4,5}, {5,6}, {6,7}, {7,4}, // topo
+        {0,4}, {1,5}, {2,6}, {3,7}  // laterais
     };
 
-    // --- 2. PROJEÇÃO E RASTERIZAÇÃO ---
-    glColor3f(0.2f, 0.8f, 1.0f); // Cor azul claro
+    // 2. Rasterização 3D com GL_POINTS
+    glColor3f(1.0f, 0.6f, 0.0f); // Laranja
     glPointSize(2.0f);
+    glBegin(GL_POINTS);
 
-    GLdouble modelview[16], projection[16];
-    GLint viewport[4];
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
+    auto bresenham3D = [](Point3D p1, Point3D p2) {
+        int steps = 100; // Número de pontos (qualidade da linha)
 
-    auto projetar_e_rasterizar = [&](const Point3D& p1, const Point3D& p2) {
-        GLdouble p1_2d[2], p2_2d[2], temp_z;
-        gluProject(p1.x, p1.y, p1.z, modelview, projection, viewport, &p1_2d[0], &p1_2d[1], &temp_z);
-        gluProject(p2.x, p2.y, p2.z, modelview, projection, viewport, &p2_2d[0], &p2_2d[1], &temp_z);
-        bresenham((int)p1_2d[0], (int)p1_2d[1], (int)p2_2d[0], (int)p2_2d[1], drawScreenPixel);
+        float dx = (p2.x - p1.x) / steps;
+        float dy = (p2.y - p1.y) / steps;
+        float dz = (p2.z - p1.z) / steps;
+
+        for (int i = 0; i <= steps; ++i) {
+            float x = p1.x + dx * i;
+            float y = p1.y + dy * i;
+            float z = p1.z + dz * i;
+            //Pode fazer com o espaçamento de pontos diferente
+            // if (i % 5 == 0) {
+            //     glVertex3f(x, y, z);
+            // }
+            glVertex3f(x, y, z);
+        }
     };
 
     for (int i = 0; i < 12; ++i) {
-        projetar_e_rasterizar(vertices[arestas[i][0]], vertices[arestas[i][1]]);
+        bresenham3D(vertices[arestas[i][0]], vertices[arestas[i][1]]);
     }
+
+    glEnd();
 }
 
-void Objects::desenhaTampoDaMesaWireframeBresenham(float largura, float profundidade, float espessura) {
-    // --- 1. GERAÇÃO E ARMAZENAMENTO DOS VÉRTICES DO CONTORNO ---
-
-    float raio_canto = 0.2f;
-    int num_segmentos_canto = 10;
-    float l = largura / 2.0f;
-    float p = profundidade / 2.0f;
-    float e = espessura / 2.0f;
-
-    std::vector<Point3D> contorno_superior;
-    std::vector<Point3D> contorno_inferior;
-
-    // A. Vértices da parte de trás e lateral direita
-    contorno_superior.push_back({-l, e, -p});
-    contorno_superior.push_back({l, e, -p});
-    contorno_superior.push_back({l, e, p - raio_canto});
-
-    // B. Vértices do canto frontal direito (curva)
-    for (int i = 1; i <= num_segmentos_canto; ++i) {
-        float angulo = (float)i / num_segmentos_canto * 90.0f;
-        float rad = angulo * M_PI / 180.0f;
-        contorno_superior.push_back({-(l - raio_canto) + cosf(rad) * raio_canto, e, (p - raio_canto) + sinf(rad) * raio_canto});
-    }
-
-    // C. Vértices do canto frontal esquerdo (curva)
-    for (int i = 1; i <= num_segmentos_canto; ++i) {
-        float angulo = 90.0f + (float)i / num_segmentos_canto * 90.0f;
-        float rad = angulo * M_PI / 180.0f;
-        contorno_superior.push_back({-(l - raio_canto) + cosf(rad) * raio_canto, e, (p - raio_canto) + sinf(rad) * raio_canto});
-    }
-
-    // D. Vértice da lateral esquerda
-    contorno_superior.push_back({-l, e, p - raio_canto});
-
-    // Cria o contorno inferior espelhando o superior no eixo Y
-    for (const auto& ponto : contorno_superior) {
-        contorno_inferior.push_back({ponto.x, -e, ponto.z});
-    }
-
-    // --- 2. PROJEÇÃO E RASTERIZAÇÃO DAS ARESTAS ---
-    
-    glColor3f(1.0f, 1.0f, 0.0f); // Cor amarela para o wireframe
-    glPointSize(1.0f);
-
-    GLdouble modelview[16], projection[16];
-    GLint viewport[4];
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    auto projetar_e_rasterizar = [&](const Point3D& p1, const Point3D& p2) {
-        GLdouble p1_2d[2], p2_2d[2];
-        GLdouble temp_z;
-        gluProject(p1.x, p1.y, p1.z, modelview, projection, viewport, &p1_2d[0], &p1_2d[1], &temp_z);
-        gluProject(p2.x, p2.y, p2.z, modelview, projection, viewport, &p2_2d[0], &p2_2d[1], &temp_z);
-        bresenham((int)p1_2d[0], (int)p1_2d[1], (int)p2_2d[0], (int)p2_2d[1], drawScreenPixel);
-    };
-
-    // A. Desenha as arestas do contorno superior e inferior
-    for (size_t i = 0; i < contorno_superior.size(); ++i) {
-        Point3D p1_sup = contorno_superior[i];
-        Point3D p2_sup = contorno_superior[(i + 1) % contorno_superior.size()]; // O % faz a volta para o início
-        projetar_e_rasterizar(p1_sup, p2_sup);
-
-        Point3D p1_inf = contorno_inferior[i];
-        Point3D p2_inf = contorno_inferior[(i + 1) % contorno_inferior.size()];
-        projetar_e_rasterizar(p1_inf, p2_inf);
-    }
-    
-    // B. Desenha as arestas verticais que conectam os dois contornos
-    for (size_t i = 0; i < contorno_superior.size(); ++i) {
-        projetar_e_rasterizar(contorno_superior[i], contorno_inferior[i]);
-    }
-}
 
 void Objects::desenhaCubo() {
     // Face da frente

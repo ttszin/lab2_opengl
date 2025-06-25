@@ -128,17 +128,16 @@ void display() {
     // --- MONTAGEM DA CENA ---
     obj.desenhaSala(12.0f, 4.0f, 16.0f);
 
-    // --- LIXEIRA: Desenha a lixeira em wireframe usando Bresenham ---
-    glPushMatrix();
-    // Coloca a lixeira em um canto da sala
-    geometricTransformation::Translate(-5.0f, 0.0f, 6.0f);
-    obj.desenhaLixeiraWireframeBresenham(); // Chama a nossa nova função
-    glPopMatrix();
-
     // Desenha o quadro negro primeiro
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 2.0f, -7.9f);
     obj.desenhaQuadroNegro();
+    glPopMatrix();
+
+    // --- LIXEIRA: Desenha a lixeira em wireframe usando Bresenham ---
+    glPushMatrix();
+    geometricTransformation::Translate(-5.0f, 0.0f, 6.0f);
+    obj.desenhaLixeiraWireframeBresenham();
     glPopMatrix();
 
     // Define as posições X para cada fileira de mesas
@@ -153,11 +152,7 @@ void display() {
         // 1. Move para a posição da fileira atual
         geometricTransformation::Translate(pos_x_fileira, 0.0f, -1.5f);
 
-    
-        // --- MESA ESPECIAL: Tampo Rasterizado ---
-        // Desenha a mesa com o tampo em wireframe
         obj.desenhaMesaLaboratorio(4.0f, 1.2f);
-        // Desenha os postos de trabalho normalmente sobre ela
         // (o tampo não existe de forma sólida, então os objetos vão flutuar, o que é bom para a demonstração)
         glPushMatrix();
         geometricTransformation::Translate(-1.0f, 0.0f, 0.0f);
@@ -188,6 +183,7 @@ void display() {
         // Fim do grupo desta fileira
         glPopMatrix();
     }
+
     // --- DESENHA AS JANELAS NA PAREDE ESQUERDA ---
     // A parede esquerda está em X = -6.0f (metade da largura da sala que é 12.0f)
     float parede_x = -5.98f; // Um pouco para dentro para não "brigar" com a parede
@@ -207,11 +203,10 @@ void display() {
         glPopMatrix();
     }
 
-
     glutSwapBuffers();
 }
 
-// Definições das outras funções (init, reshape, keyboard) - sem alterações
+// Definições das outras funções (init, reshape, keyboard)
 
 void init() {
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
