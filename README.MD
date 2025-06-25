@@ -40,8 +40,13 @@ Para rodar este programa, é essencial ter o compilador **MinGW** e as bibliotec
 
 Com o ambiente configurado, abra o terminal (Prompt de Comando ou PowerShell) na pasta raiz do projeto e execute o seguinte comando para compilar todos os arquivos de código-fonte:
 
+Linux:
 ```bash
 g++ main.cpp geometric_transformations.cpp objects.cpp rasterization.cpp -o lab_app -lGL -lGLU -lglut
+```
+Windows:
+```bash
+g++ main.cpp geometric_transformation.cpp objects.cpp -o lab_app -lopengl32 -lglu32 -lglut32 -lm
 ```
 
 Isso irá gerar um arquivo executável chamado `lab_app.exe`.
