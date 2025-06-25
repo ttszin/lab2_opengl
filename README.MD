@@ -22,7 +22,7 @@ Siga as instruções abaixo para compilar e executar o projeto em seu computador
 
 Para rodar este programa, é essencial ter o compilador **MinGW** e as bibliotecas do **GLUT** instalados e configurados no seu ambiente Windows.
 
-### Guia de Instalação
+### Guia de Instalação (Windows)
 
 1.  **Instalar o MinGW (GCC for Windows):**
     * É necessário um compilador C++. O MinGW é uma excelente opção para Windows.
@@ -36,9 +36,6 @@ Para rodar este programa, é essencial ter o compilador **MinGW** e as bibliotec
         2.  Copie `glut32.lib` para a pasta `MinGW\lib\`.
         3.  Copie `glut32.dll` para a **pasta raiz do seu projeto** (a mesma onde o `lab_app.exe` será gerado). Esta é a abordagem mais simples e segura.
 
-### Compilação
-
-Com o ambiente configurado, abra o terminal (Prompt de Comando ou PowerShell) na pasta raiz do projeto e execute o seguinte comando para compilar todos os arquivos de código-fonte:
 -----
 
 ## 🚀 Compilação e Execução
@@ -49,7 +46,7 @@ Siga as instruções abaixo para o seu sistema operacional.
 
 **1. Instalar Dependências**
 
-Abra o terminal e instale o compilador C++ e as bibliotecas FreeGLUT com o seguinte comando:
+Abra o terminal e na pasta raiz do projeto e instale o compilador C++ e as bibliotecas FreeGLUT com o seguinte comando:
 
 ```bash
 sudo apt-get update && sudo apt-get install build-essential freeglut3-dev
@@ -74,15 +71,6 @@ Execute a aplicação com o comando:
 ### Windows (Utilizando MinGW/g++)
 
 **1. Configurar o Ambiente**
-
-Antes de compilar, você precisa ter o MinGW instalado e os arquivos do GLUT configurados corretamente:
-
-  * **MinGW:** Tenha o compilador g++ para Windows instalado e configurado no PATH do sistema.
-  * **GLUT:**
-    1.  Baixe os binários do GLUT (ex: [glut-3.7.6-bin.zip](https://www.google.com/search?q=https://www.transmission.mspro.com/download/glut-3.7.6-bin.zip)).
-    2.  Copie `glut.h` para a pasta `MinGW\include\GL\`.
-    3.  Copie `glut32.lib` para a pasta `MinGW\lib\`.
-    4.  Copie `glut32.dll` para a **pasta do projeto** (mesmo local onde o `.exe` será gerado).
 
 **2. Compilar o Projeto**
 
