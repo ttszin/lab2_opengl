@@ -74,6 +74,18 @@ const GLfloat MAT_GLASS_DIFFUSE[]  = {0.01f, 0.01f, 0.01f, 1.0f}; // Quase preto
 const GLfloat MAT_GLASS_SPECULAR[] = {1.0f, 1.0f, 1.0f, 1.0f};   // Reflexo branco e forte
 const GLfloat MAT_GLASS_SHININESS  = 128.0f; // Expoente MUITO alto para um brilho nítido
 
+// Material: Metal Prateado Polido (para a moldura do quadro)
+const GLfloat MAT_SILVER_METAL_AMBIENT[]  = {0.2f, 0.2f, 0.2f, 1.0f};
+const GLfloat MAT_SILVER_METAL_DIFFUSE[]  = {0.7f, 0.7f, 0.7f, 1.0f};
+const GLfloat MAT_SILVER_METAL_SPECULAR[] = {0.9f, 0.9f, 0.9f, 1.0f};
+const GLfloat MAT_SILVER_METAL_SHININESS  = 90.0f;
+
+// Material: Superfície Branca (para a área de escrita do quadro)
+const GLfloat MAT_WHITEBOARD_AMBIENT[]  = {0.3f, 0.3f, 0.3f, 1.0f};
+const GLfloat MAT_WHITEBOARD_DIFFUSE[]  = {1.0f, 1.0f, 1.0f, 1.0f};
+const GLfloat MAT_WHITEBOARD_SPECULAR[] = {0.5f, 0.5f, 0.5f, 1.0f}; // Um brilho suave
+const GLfloat MAT_WHITEBOARD_SHININESS  = 32.0f;
+
 //======================================================================
 // MODELAGEM DOS OBJETOS DO LABORATÓRIO
 //======================================================================
@@ -542,17 +554,31 @@ void Objects::desenhaMesaLaboratorio(float largura, float profundidade) {
 
 void Objects::desenhaQuadroNegro() {
     glPushMatrix();
-    // Superfície do quadro
-    glDisable(GL_LIGHTING);
-    //glColor3f(0.1f, 0.2f, 0.1f); // Verde bem escuro
+
+    // --- Parte 1: Superfície de Escrita Branca ---
+    // Esta parte está correta e permanece a mesma.
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_WHITEBOARD_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_WHITEBOARD_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_WHITEBOARD_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_WHITEBOARD_SHININESS);
+
     glPushMatrix();
     geometricTransformation::Scale(3.0f, 1.5f, 0.02f);
     desenhaCubo();
     glPopMatrix();
-    glEnable(GL_LIGHTING);
 
-    // Moldura de madeira
-    //glColor3f(0.5f, 0.35f, 0.05f);
+    // --- Parte 2: Moldura de Metal Prateado ---
+    // Aplicamos o material de metal para as 4 partes da moldura
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_SILVER_METAL_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_SILVER_METAL_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_SILVER_METAL_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_SILVER_METAL_SHININESS);
+    
+    // <<<<<<<<<<<<<<<<<<<< CORREÇÃO AQUI >>>>>>>>>>>>>>>>>>>>
+    // Move a moldura inteira um pouco para frente (no eixo Z) para evitar Z-Fighting
+    geometricTransformation::Translate(0.0f, 0.0f, 0.01f);
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     // Moldura superior
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.8f, 0.0f);
