@@ -6,6 +6,74 @@
 #include "rasterization.h"
 #include <vector> // Precisaremos de vetores para armazenar os pontos
 
+// --- PALETA DE MATERIAIS PARA O MODELO DE PHONG ---
+
+// Material: Chão Cinza Claro
+const GLfloat MAT_FLOOR_AMBIENT[]  = {0.3f, 0.3f, 0.3f, 1.0f};
+const GLfloat MAT_FLOOR_DIFFUSE[]  = {0.8f, 0.8f, 0.7f, 1.0f};
+const GLfloat MAT_FLOOR_SPECULAR[] = {0.0f, 0.0f, 0.0f, 1.0f}; // Sem brilho
+const GLfloat MAT_FLOOR_SHININESS  = 10.0f;
+
+// Material: Teto Branco
+const GLfloat MAT_CEILING_AMBIENT[]  = {0.3f, 0.3f, 0.3f, 1.0f};
+const GLfloat MAT_CEILING_DIFFUSE[]  = {0.9f, 0.9f, 0.9f, 1.0f};
+const GLfloat MAT_CEILING_SPECULAR[] = {0.0f, 0.0f, 0.0f, 1.0f}; // Sem brilho
+const GLfloat MAT_CEILING_SHININESS  = 10.0f;
+
+// Material: Paredes Laterais (Azuladas)
+const GLfloat MAT_SIDEWALL_AMBIENT[]  = {0.1f, 0.1f, 0.2f, 1.0f};
+const GLfloat MAT_SIDEWALL_DIFFUSE[]  = {0.7f, 0.7f, 0.9f, 1.0f};
+const GLfloat MAT_SIDEWALL_SPECULAR[] = {0.1f, 0.1f, 0.1f, 1.0f}; // Pouco brilho
+const GLfloat MAT_SIDEWALL_SHININESS  = 10.0f;
+
+// Material: Parede do Fundo (Rosada)
+const GLfloat MAT_BACKWALL_AMBIENT[]  = {0.2f, 0.1f, 0.1f, 1.0f};
+const GLfloat MAT_BACKWALL_DIFFUSE[]  = {0.9f, 0.8f, 0.8f, 1.0f};
+const GLfloat MAT_BACKWALL_SPECULAR[] = {0.1f, 0.1f, 0.1f, 1.0f}; // Pouco brilho
+const GLfloat MAT_BACKWALL_SHININESS  = 10.0f;
+
+// Material: Parede da Frente (Bege)
+const GLfloat MAT_FRONTWALL_AMBIENT[]  = {0.2f, 0.2f, 0.1f, 1.0f};
+const GLfloat MAT_FRONTWALL_DIFFUSE[]  = {0.9f, 0.9f, 0.8f, 1.0f};
+const GLfloat MAT_FRONTWALL_SPECULAR[] = {0.1f, 0.1f, 0.1f, 1.0f}; // Pouco brilho
+const GLfloat MAT_FRONTWALL_SHININESS  = 10.0f;
+
+// Material: Plástico Preto/Cinza Escuro (para monitores, gabinetes)
+const GLfloat MAT_DARK_PLASTIC_AMBIENT[]  = {0.02f, 0.02f, 0.02f, 1.0f};
+const GLfloat MAT_DARK_PLASTIC_DIFFUSE[]  = {0.1f, 0.1f, 0.1f, 1.0f};
+const GLfloat MAT_DARK_PLASTIC_SPECULAR[] = {0.4f, 0.4f, 0.4f, 1.0f};
+const GLfloat MAT_DARK_PLASTIC_SHININESS  = 32.0f;
+
+// Material: Cadeira Azul
+const GLfloat MAT_CHAIR_BLUE_AMBIENT[]  = {0.0f, 0.0f, 0.1f, 1.0f};
+const GLfloat MAT_CHAIR_BLUE_DIFFUSE[]  = {0.1f, 0.1f, 0.5f, 1.0f};
+const GLfloat MAT_CHAIR_BLUE_SPECULAR[] = {0.5f, 0.5f, 0.5f, 1.0f};
+const GLfloat MAT_CHAIR_BLUE_SHININESS  = 40.0f;
+
+// Material: Mesa Vermelha
+const GLfloat MAT_TABLE_RED_AMBIENT[]  = {0.2f, 0.0f, 0.0f, 1.0f};
+const GLfloat MAT_TABLE_RED_DIFFUSE[]  = {0.8f, 0.1f, 0.1f, 1.0f};
+const GLfloat MAT_TABLE_RED_SPECULAR[] = {0.3f, 0.1f, 0.1f, 1.0f}; // Brilho mais sutil e avermelhado
+const GLfloat MAT_TABLE_RED_SHININESS  = 10.0f; // Menos concentrado, mais fosco
+
+// Material: Painel de Madeira
+const GLfloat MAT_WOOD_AMBIENT[]  = {0.2f, 0.15f, 0.1f, 1.0f};
+const GLfloat MAT_WOOD_DIFFUSE[]  = {0.6f, 0.4f, 0.2f, 1.0f};
+const GLfloat MAT_WOOD_SPECULAR[] = {0.1f, 0.1f, 0.1f, 1.0f}; // Quase sem brilho
+const GLfloat MAT_WOOD_SHININESS  = 5.0f;
+
+// Material: Metal Preto Polido
+const GLfloat MAT_BLACK_METAL_AMBIENT[]  = {0.02f, 0.02f, 0.02f, 1.0f};
+const GLfloat MAT_BLACK_METAL_DIFFUSE[]  = {0.05f, 0.05f, 0.05f, 1.0f};
+const GLfloat MAT_BLACK_METAL_SPECULAR[] = {0.9f, 0.9f, 0.9f, 1.0f};
+const GLfloat MAT_BLACK_METAL_SHININESS  = 100.0f;
+
+// Material: Vidro Preto Polido (para telas de monitor)
+const GLfloat MAT_GLASS_AMBIENT[]  = {0.0f, 0.0f, 0.0f, 1.0f};
+const GLfloat MAT_GLASS_DIFFUSE[]  = {0.01f, 0.01f, 0.01f, 1.0f}; // Quase preto
+const GLfloat MAT_GLASS_SPECULAR[] = {1.0f, 1.0f, 1.0f, 1.0f};   // Reflexo branco e forte
+const GLfloat MAT_GLASS_SHININESS  = 128.0f; // Expoente MUITO alto para um brilho nítido
+
 //======================================================================
 // MODELAGEM DOS OBJETOS DO LABORATÓRIO
 //======================================================================
@@ -186,7 +254,7 @@ void Objects::desenhaLixeiraWireframeBresenham() {
     };
 
     // 2. Rasterização 3D com GL_POINTS
-    glColor3f(1.0f, 0.6f, 0.0f); // Laranja
+    //glColor3f(1.0f, 0.6f, 0.0f); // Laranja
     glPointSize(2.0f);
     glBegin(GL_POINTS);
 
@@ -278,7 +346,7 @@ void Objects::desenhaJanela(float anguloAbertura) {
     float espessura_moldura = 0.05f;
 
     // --- Caixilho (a parte fixa na parede) ---
-    glColor3f(0.9f, 0.9f, 0.9f); // Cor branca/cinza claro
+    //glColor3f(0.9f, 0.9f, 0.9f); // Cor branca/cinza claro
     glPushMatrix();
     // Moldura superior e inferior
     for (float y_pos : {-altura / 2.0f, altura / 2.0f}) {
@@ -311,7 +379,7 @@ void Objects::desenhaJanela(float anguloAbertura) {
     geometricTransformation::Translate(0.0f, -altura / 2.0f, 0.0f);
 
     // Define a cor do vidro com transparência (o quarto valor 'alpha')
-    glColor4f(0.7f, 0.9f, 1.0f, 0.5f); // Azul claro, 50% opaco
+    //glColor4f(0.7f, 0.9f, 1.0f, 0.5f); // Azul claro, 50% opaco
 
     // Desenha o cubo que representa o vidro
     geometricTransformation::Scale(largura, altura, 0.02f); // Bem fino
@@ -324,54 +392,52 @@ void Objects::desenhaJanela(float anguloAbertura) {
 void Objects::desenhaMonitor() {
     glPushMatrix();
 
-    // --- Deixa o material do monitor brilhante ---
-    GLfloat especularidade_plastico[] = {0.8f, 0.8f, 0.8f, 1.0f}; // Um brilho branco
-    GLint expoente_especular = 50; // Quão concentrado é o brilho (valores maiores = mais nítido)
-    glMaterialfv(GL_FRONT, GL_SPECULAR, especularidade_plastico);
-    glMateriali(GL_FRONT, GL_SHININESS, expoente_especular);
+    // --- Parte 1: Corpo de Plástico Escuro ---
+    // Define o material para as partes plásticas do monitor
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_DARK_PLASTIC_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_DARK_PLASTIC_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_DARK_PLASTIC_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_DARK_PLASTIC_SHININESS);
 
-    // Base do monitor
-    glColor3f(0.2f, 0.2f, 0.2f); // Cinza escuro
+    // Desenha a Base, a Haste e a Moldura da tela
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.05f, 0.0f);
     geometricTransformation::Scale(0.3f, 0.1f, 0.3f);
     desenhaCubo();
     glPopMatrix();
 
-    // Haste do monitor
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.2f, 0.0f);
     geometricTransformation::Scale(0.05f, 0.3f, 0.05f);
     desenhaCubo();
     glPopMatrix();
 
-    // Tela do monitor
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.5f, 0.0f);
     geometricTransformation::Scale(0.7f, 0.5f, 0.05f);
     desenhaCubo();
     glPopMatrix();
 
-    // "Vidro" da tela (um pouco à frente, preto sólido)
-    glDisable(GL_LIGHTING); // Desliga a iluminação para cor sólida
-    glColor3f(0.0f, 0.0f, 0.0f);
+    // --- Parte 2: A Tela de Vidro Polido ---
+    // Agora, trocamos para o material de vidro para desenhar a tela
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_GLASS_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_GLASS_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_GLASS_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_GLASS_SHININESS);
+
     glPushMatrix();
-    geometricTransformation::Translate(0.0f, 0.5f, 0.026f); // Levemente à frente da tela
+    // A tela fica levemente à frente da moldura
+    geometricTransformation::Translate(0.0f, 0.5f, 0.026f);
     geometricTransformation::Scale(0.65f, 0.45f, 0.01f);
     desenhaCubo();
     glPopMatrix();
-    glEnable(GL_LIGHTING); // Liga a iluminação de volta
-
-    // --- Devolve o material para um estado sem brilho para os próximos objetos ---
-    GLfloat sem_brilho[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    glMaterialfv(GL_FRONT, GL_SPECULAR, sem_brilho);
 
     glPopMatrix();
 }
 
 void Objects::desenhaGabinetePC() {
     glPushMatrix();
-    glColor3f(0.2f, 0.2f, 0.2f);
+    //glColor3f(0.2f, 0.2f, 0.2f);
     geometricTransformation::Scale(0.2f, 0.5f, 0.4f);
     desenhaCubo();
     glPopMatrix();
@@ -379,7 +445,7 @@ void Objects::desenhaGabinetePC() {
 
 void Objects::desenhaCadeira() {
     glPushMatrix();
-    glColor3f(0.3f, 0.3f, 0.4f); // Azul escuro
+    //glColor3f(0.3f, 0.3f, 0.4f); // Azul escuro
     
     // Assento
     glPushMatrix();
@@ -396,7 +462,7 @@ void Objects::desenhaCadeira() {
     glPopMatrix();
     
     // Haste central
-    glColor3f(0.2f, 0.2f, 0.2f);
+    //glColor3f(0.2f, 0.2f, 0.2f);
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.125f, 0.0f);
     geometricTransformation::Scale(0.05f, 0.25f, 0.05f);
@@ -428,7 +494,7 @@ void Objects::desenhaMesaLaboratorio(float largura, float profundidade) {
     glPushMatrix();
 
     // --- Tampo Principal (vermelho) com cantos arredondados ---
-    glColor3f(0.8f, 0.1f, 0.1f);
+    //glColor3f(0.8f, 0.1f, 0.1f);
     glPushMatrix();
     geometricTransformation::Translate(0.0f, alturaMesa, 0.0f);
     desenhaTampoDaMesa(largura, profundidade, espessuraTampo); // Chama a função correta do tampo
@@ -444,7 +510,7 @@ void Objects::desenhaMesaLaboratorio(float largura, float profundidade) {
     glPopMatrix();
 
     // --- Painéis de Suporte (cor de madeira) ---
-    glColor3f(0.9f, 0.8f, 0.6f); // Cor clara de madeira
+    //glColor3f(0.9f, 0.8f, 0.6f); // Cor clara de madeira
 
     // Painel da Esquerda
     glPushMatrix();
@@ -478,7 +544,7 @@ void Objects::desenhaQuadroNegro() {
     glPushMatrix();
     // Superfície do quadro
     glDisable(GL_LIGHTING);
-    glColor3f(0.1f, 0.2f, 0.1f); // Verde bem escuro
+    //glColor3f(0.1f, 0.2f, 0.1f); // Verde bem escuro
     glPushMatrix();
     geometricTransformation::Scale(3.0f, 1.5f, 0.02f);
     desenhaCubo();
@@ -486,7 +552,7 @@ void Objects::desenhaQuadroNegro() {
     glEnable(GL_LIGHTING);
 
     // Moldura de madeira
-    glColor3f(0.5f, 0.35f, 0.05f);
+    //glColor3f(0.5f, 0.35f, 0.05f);
     // Moldura superior
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.8f, 0.0f);
@@ -544,13 +610,65 @@ void Objects::desenhaPostoDeTrabalho() {
 }
 
 void Objects::desenhaSala(float largura, float altura, float profundidade) {
-    float larg = largura / 2.0f; float alt = altura; float prof = profundidade / 2.0f;
+    float larg = largura / 2.0f; 
+    float alt = altura; 
+    float prof = profundidade / 2.0f;
+
     glPushMatrix();
-    glColor3f(0.8f, 0.8f, 0.7f); glNormal3f(0.0f, 1.0f, 0.0f); glBegin(GL_QUADS); glVertex3f(-larg, 0.0f, -prof); glVertex3f( larg, 0.0f, -prof); glVertex3f( larg, 0.0f,  prof); glVertex3f(-larg, 0.0f,  prof); glEnd();
-    glColor3f(0.9f, 0.9f, 0.9f); glNormal3f(0.0f, -1.0f, 0.0f); glBegin(GL_QUADS); glVertex3f(-larg, alt,  prof); glVertex3f( larg, alt,  prof); glVertex3f( larg, alt, -prof); glVertex3f(-larg, alt, -prof); glEnd();
-    glColor3f(0.7f, 0.7f, 0.9f); glNormal3f(1.0f, 0.0f, 0.0f); glBegin(GL_QUADS); glVertex3f(-larg, 0.0f,  prof); glVertex3f(-larg, alt,   prof); glVertex3f(-larg, alt,  -prof); glVertex3f(-larg, 0.0f, -prof); glEnd();
-    glColor3f(0.7f, 0.7f, 0.9f); glNormal3f(-1.0f, 0.0f, 0.0f); glBegin(GL_QUADS); glVertex3f(larg, 0.0f, -prof); glVertex3f(larg, alt,  -prof); glVertex3f(larg, alt,   prof); glVertex3f(larg, 0.0f,  prof); glEnd();
-    glColor3f(0.9f, 0.8f, 0.8f); glNormal3f(0.0f, 0.0f, 1.0f); glBegin(GL_QUADS); glVertex3f(-larg, 0.0f, -prof); glVertex3f(-larg, alt,  -prof); glVertex3f( larg, alt,  -prof); glVertex3f( larg, 0.0f, -prof); glEnd();
-    glColor3f(0.9f, 0.9f, 0.8f); glNormal3f(0.0f, 0.0f, -1.0f); glBegin(GL_QUADS); glVertex3f(-larg, 0.0f, prof); glVertex3f(larg, 0.0f, prof); glVertex3f(larg, alt, prof); glVertex3f(-larg, alt, prof); glEnd();
+
+    // Chão
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_FLOOR_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_FLOOR_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_FLOOR_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_FLOOR_SHININESS);
+    glBegin(GL_QUADS); 
+        glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(-larg, 0.0f, -prof); glVertex3f( larg, 0.0f, -prof); glVertex3f( larg, 0.0f,  prof); glVertex3f(-larg, 0.0f,  prof); 
+    glEnd();
+
+    // Teto
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_CEILING_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_CEILING_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_CEILING_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_CEILING_SHININESS);
+    glBegin(GL_QUADS); 
+        glNormal3f(0.0f, -1.0f, 0.0f);
+        glVertex3f(-larg, alt,  prof); glVertex3f( larg, alt,  prof); glVertex3f( larg, alt, -prof); glVertex3f(-larg, alt, -prof); 
+    glEnd();
+
+    // Paredes Laterais
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_SIDEWALL_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_SIDEWALL_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_SIDEWALL_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_SIDEWALL_SHININESS);
+    glBegin(GL_QUADS); // Esquerda
+        glNormal3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(-larg, 0.0f,  prof); glVertex3f(-larg, alt,   prof); glVertex3f(-larg, alt,  -prof); glVertex3f(-larg, 0.0f, -prof); 
+    glEnd();
+    glBegin(GL_QUADS); // Direita
+        glNormal3f(-1.0f, 0.0f, 0.0f);
+        glVertex3f(larg, 0.0f, -prof); glVertex3f(larg, alt,  -prof); glVertex3f(larg, alt,   prof); glVertex3f(larg, 0.0f,  prof); 
+    glEnd();
+
+    // Parede do Fundo
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_BACKWALL_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_BACKWALL_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_BACKWALL_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_BACKWALL_SHININESS);
+    glBegin(GL_QUADS); 
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(-larg, 0.0f, -prof); glVertex3f(-larg, alt,  -prof); glVertex3f( larg, alt,  -prof); glVertex3f( larg, 0.0f, -prof); 
+    glEnd();
+
+    // Parede da Frente
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   MAT_FRONTWALL_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_FRONTWALL_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_FRONTWALL_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_FRONTWALL_SHININESS);
+    glBegin(GL_QUADS); 
+        glNormal3f(0.0f, 0.0f, -1.0f);
+        glVertex3f(-larg, 0.0f, prof); glVertex3f(larg, 0.0f, prof); glVertex3f(larg, alt, prof); glVertex3f(-larg, alt, prof); 
+    glEnd();
+
     glPopMatrix();
 }

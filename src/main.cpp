@@ -209,23 +209,33 @@ void display() {
 // Definições das outras funções (init, reshape, keyboard)
 
 void init() {
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); // Cenário preto/azulado escuro
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING); glEnable(GL_LIGHT0); glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    glShadeModel(GL_SMOOTH); // Ativa Gouraud Shading
+
+    // Habilita o sistema de iluminação
+    glEnable(GL_LIGHTING);
+    
+    // Configura e habilita a Luz 0
     GLfloat luz_ambiente[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     GLfloat luz_difusa[]   = { 0.8f, 0.8f, 0.8f, 1.0f };
-    GLfloat luz_posicao[]  = { 0.0f, 3.5f, 0.0f, 1.0f };
+    GLfloat luz_especular[]= { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat luz_posicao[]  = { 0.0f, 3.8f, 0.0f, 1.0f };
+    
     glLightfv(GL_LIGHT0, GL_AMBIENT, luz_ambiente);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, luz_difusa);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, luz_especular);
     glLightfv(GL_LIGHT0, GL_POSITION, luz_posicao);
-    glShadeModel(GL_SMOOTH);
-    glShadeModel(GL_SMOOTH);
+    
+    glEnable(GL_LIGHT0);
 
-    // --- HABILITA TRANSPARÊNCIA ---
+    // Habilita transparência para as janelas
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // As linhas glColorMaterial foram REMOVIDAS daqui
 }
+
 void reshape(int w, int h) {
     window_width = w;
     window_height = h;
