@@ -1,5 +1,3 @@
-// File: rasterization.cpp (VERSÃO FINAL E CORRIGIDA)
-
 #include "rasterization.h"
 #include <GL/glut.h>
 #include <cmath>
@@ -41,6 +39,7 @@ void drawScreenPixel(int x, int y) {
     glMatrixMode(GL_MODELVIEW);
 }
 
+//Aplica bresenham para cada pixel entre os pontos (x1, y1) e (x2, y2).
 void bresenham(int x1, int y1, int x2, int y2, std::function<void(int, int)> drawPixelFunc) {
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);

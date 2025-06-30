@@ -1,4 +1,5 @@
 
+//Declara todas as variáveis e funções utilizadas no geometric_transformations.cpp
 #ifndef GEOMETRIC_TRANSFORMATION_H // Corrigi o nome do include guard
 #define GEOMETRIC_TRANSFORMATION_H
 
@@ -26,7 +27,7 @@ class geometricTransformation {
         float aspect;
         float zNear;
         float zFar;
-    public: // <-- TORNA OS MÉTODOS PÚBLICOS E ACESSÍVEIS
+    public: // TORNA OS MÉTODOS PÚBLICOS E ACESSÍVEIS
         // Métodos estáticos não precisam de um objeto para serem chamados
         static void Translate(float tx, float ty, float tz);
         static void Scale(float sx, float sy, float sz);

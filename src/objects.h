@@ -1,5 +1,4 @@
-// File: objects.h
-
+//Declara todas as variáveis e funções utilizadas no objects.cpp
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
@@ -29,7 +28,10 @@ class Objects {
         void desenhaMesaLaboratorioWireframeTampo(float largura, float profundidade);
         void desenhaLixeira();
         void desenhaLixeiraWireframeBresenham();
-        void desenhaLixeiraHachuradaBresenham();
+        void desenhaParedeComJanelas(float largura, float altura, float profundidade);
+        void desenhaLampada();
+        void desenhaArCondicionado();
+        void desenhaPorta();
 };
 
 #endif // OBJECTS_H

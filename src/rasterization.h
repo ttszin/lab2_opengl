@@ -1,5 +1,4 @@
-// File: rasterization.h
-
+//Declara todas as variáveis e funções utilizadas no rasterization.cpp
 #ifndef RASTERIZATION_H
 #define RASTERIZATION_H
 
