@@ -486,8 +486,14 @@ void Objects::desenhaGabinetePC() {
 }
 
 void Objects::desenhaCadeira() {
-    glPushMatrix();
+    //Aplicando o material do acento da cadeira
+    glMaterialfv(GL_FRONT, GL_AMBIENT,    MAT_BLACK_UPHOLSTERY_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_BLACK_UPHOLSTERY_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_BLACK_UPHOLSTERY_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_BLACK_UPHOLSTERY_SHININESS);
     
+    glPushMatrix();
+
     // Assento
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.25f, 0.0f);
@@ -495,6 +501,12 @@ void Objects::desenhaCadeira() {
     desenhaCubo();
     glPopMatrix();
     
+    //Aplicando o material do encosto
+    glMaterialfv(GL_FRONT, GL_AMBIENT,    MAT_BLACK_METAL_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_BLACK_METAL_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_BLACK_METAL_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_BLACK_METAL_SHININESS);
+
     // Encosto
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.6f, -0.18f);
@@ -502,6 +514,12 @@ void Objects::desenhaCadeira() {
     desenhaCubo();
     glPopMatrix();
     
+    //Aplicando o material da haste central e pés
+    glMaterialfv(GL_FRONT, GL_AMBIENT,    MAT_BLACK_UPHOLSTERY_AMBIENT);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   MAT_BLACK_UPHOLSTERY_DIFFUSE);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  MAT_BLACK_UPHOLSTERY_SPECULAR);
+    glMaterialf(GL_FRONT, GL_SHININESS, MAT_BLACK_UPHOLSTERY_SHININESS);
+
     // Haste central
     glPushMatrix();
     geometricTransformation::Translate(0.0f, 0.125f, 0.0f);
